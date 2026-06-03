@@ -174,3 +174,14 @@ cython_debug/
 
 .DS_Store
 
+# Local SQLite database
+backend/data/*.db
+backend/data/*.db-journal
+
+# Frontend build and test artifacts
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/test-results/
+frontend/playwright-report/
+

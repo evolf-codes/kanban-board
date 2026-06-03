@@ -166,3 +166,27 @@ export const createId = (prefix: string) => {
   const timePart = Date.now().toString(36);
   return `${prefix}-${randomPart}${timePart}`;
 };
+
+export const getMoveTarget = (
+  columns: Column[],
+  activeId: string,
+  overId: string
+): { columnId: string; position: number } | null => {
+  const beforeColumn = columns.find((column) => column.cardIds.includes(activeId));
+  const beforeIndex = beforeColumn?.cardIds.indexOf(activeId) ?? -1;
+
+  const nextColumns = moveCard(columns, activeId, overId);
+  const afterColumn = nextColumns.find((column) => column.cardIds.includes(activeId));
+
+  if (!afterColumn) {
+    return null;
+  }
+
+  const afterIndex = afterColumn.cardIds.indexOf(activeId);
+
+  if (beforeColumn?.id === afterColumn.id && beforeIndex === afterIndex) {
+    return null;
+  }
+
+  return { columnId: afterColumn.id, position: afterIndex };
+};
