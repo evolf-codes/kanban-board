@@ -1,53 +1,60 @@
-# The Project Management MVP web app
+# Kanban PM MVP
 
-## Business Requirements
+## Architecture
 
-This project is building a Project Management App. Key features:
-- A user can sign in
-- When signed in, the user sees a Kanban board representing their project
-- The Kanban board has fixed columns that can be renamed
-- The cards on the Kanban board can be moved with drag and drop, and edited
-- There is an AI chat feature in a sidebar; the AI is able to create / edit / move one or more cards
+- **Frontend**: Next.js App Router (`frontend/`), static export served by FastAPI.
+- **Backend**: Python FastAPI (`backend/`), SQLite, session auth.
+- **AI**: OpenRouter (`openai/gpt-oss-20b:free`), Structured Outputs, `OPENROUTER_API_KEY` in `.env`.
+- **Docker**: Multi-stage build (Node 24 → Python 3.12-slim), `docker compose up --build`, port 8000.
 
-## Limitations
+## Two run modes
 
-For the MVP, there will only be a user sign in (hardcoded to 'user' and 'password') but the database will support multiple users for future.
+| Mode | Command | URL | API proxy |
+|------|---------|-----|-----------|
+| Docker (full stack) | `./scripts/start.sh` | `http://localhost:8000` | Built-in (FastAPI serves frontend) |
+| Frontend dev only | `cd frontend && npm run dev` | `http://localhost:3000` | `next.config.ts` rewrites `/api/*` to `http://127.0.0.1:8000` |
 
-For the MVP, there will only be 1 Kanban board per signed in user.
+Backend dev: `cd backend && uv run uvicorn app.main:app --reload` (port 8000).
 
-For the MVP, this will run locally (in a docker container)
+## Auth
 
-## Technical Decisions
+Hardcoded credentials: `user` / `password`. Session-based (cookie). Login required for all `/api/board` and `/api/ai/*` routes.
 
-- NextJS frontend
-- Python FastAPI backend, including serving the static NextJS site at /
-- Everything packaged into a Docker container
-- Use "uv" as the package manager for python in the Docker container
-- Use OpenRouter for the AI calls. An OPENROUTER_API_KEY is in .env in the project root
-- Use `openai/gpt-oss-20b:free` as the model (no credits required)
-- Use SQLLite local database for the database, creating a new db if it doesn't exist
-- Start and Stop server scripts for Mac, PC, Linux in scripts/
+## Commands
 
-## Starting Point
+```sh
+# Frontend
+cd frontend
+npm run lint            # ESLint flat config (eslint-config-next)
+npx tsc --noEmit        # TypeScript check
+npm run test:unit       # Vitest (jsdom, @/ path alias)
+npm run test:e2e        # Playwright (starts backend:8001 + frontend:3000, fresh SQLite)
+npm run test:all        # unit + e2e
 
-A working MVP of the frontend has been built and is already in frontend. This is not yet designed for the Docker setup. It's a pure frontend-only demo.
+# Backend
+cd backend
+uv run pytest           # 47 tests, autouse fixture creates temp SQLite per test
+uv run uvicorn app.main:app --reload
+```
 
-## Color Scheme
+Recommended order: `npm run lint && npx tsc --noEmit && npm run test:unit`.
 
-- Accent Yellow: `#ecad0a` - accent lines, highlights
-- Blue Primary: `#209dd7` - links, key sections
-- Purple Secondary: `#753991` - submit buttons, important actions
-- Dark Navy: `#032147` - main headings
-- Gray Text: `#888888` - supporting text, labels
+## Key facts
+
+- All backend route handlers are synchronous (`def`, not `async def`).
+- `DATABASE_PATH` env var overrides SQLite location (default `backend/data/pm.db`). Playwright uses `/tmp/pm-playwright.db`.
+- `uv` is the Python package manager. Docker installs via `curl ... | sh`. On macOS host: `python3 -m uv <command>`.
+- Python 3.12+ required (Docker). Host may be older — `from __future__ import annotations` in every file avoids `str | None` syntax errors.
+- Board data shape (shared frontend/backend): `BoardData { columns: Column[]; cards: Record<string, Card> }`. Backend normalizes to SQLite, reconstructs on read.
+- Colors in CSS variables: `--accent-yellow: #ecad0a`, `--primary-blue: #209dd7`, `--secondary-purple: #753991`, `--navy-dark: #032147`, `--gray-text: #888888`.
+- Drag-and-drop uses `@dnd-kit` with custom collision detection (`pointerWithin` → `closestCenter`). Column-background drops insert at position 0.
+- AI sidebar refreshes board when response has `boardUpdated: true`.
+- `.env` and `backend/data/*.db` are gitignored.
+- Subdirectory AGENTS.md files: `backend/AGENTS.md`, `frontend/AGENTS.md`, `scripts/AGENTS.md`.
 
 ## Coding standards
 
-1. Use latest versions of libraries and idiomatic approaches as of today
-2. Keep it simple - NEVER over-engineer, ALWAYS simplify, NO unnecessary defensive programming. No extra features - focus on simplicity.
-3. Be concise. Keep README minimal. IMPORTANT: no emojis ever
-4. When hitting issues, always identify root cause before trying a fix. Do not guess. Prove with evidence, then fix the root cause.
-
-## Working documentation
-
-All documents for planning and executing this project will be in the docs/ directory.
-Please review the docs/PLAN.md document before proceeding.
+1. Never over-engineer. No unnecessary defensive programming. No extra features.
+2. No emojis anywhere in code or docs.
+3. When debugging: identify root cause with evidence before fixing. Do not guess.
+4. Keep it simple — match existing code style and library choices.
