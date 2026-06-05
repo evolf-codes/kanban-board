@@ -5,9 +5,10 @@ import { login } from "@/lib/auth";
 
 type LoginFormProps = {
   onSuccess: (username: string) => void;
+  onAttempt?: () => void;
 };
 
-export const LoginForm = ({ onSuccess }: LoginFormProps) => {
+export const LoginForm = ({ onSuccess, onAttempt }: LoginFormProps) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -16,6 +17,7 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    onAttempt?.();
     setSubmitting(true);
 
     try {

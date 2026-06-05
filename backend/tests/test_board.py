@@ -133,3 +133,28 @@ def test_unknown_card_returns_404(client) -> None:
     response = client.delete("/api/cards/missing-card")
 
     assert response.status_code == 404
+
+
+def test_move_card_to_empty_column(client) -> None:
+    login(client)
+
+    board = client.get("/api/board").json()
+    discovery = next(column for column in board["columns"] if column["id"] == "col-discovery")
+    assert discovery["cardIds"] == ["card-3"]
+
+    response = client.patch(
+        "/api/cards/card-3/move",
+        json={"column_id": "col-backlog", "position": 0},
+    )
+    assert response.status_code == 200
+
+    discovery = client.get("/api/board").json()["columns"][1]
+    assert discovery["cardIds"] == []
+
+    response = client.patch(
+        "/api/cards/card-1/move",
+        json={"column_id": "col-discovery", "position": 0},
+    )
+    board = response.json()
+    discovery = next(column for column in board["columns"] if column["id"] == "col-discovery")
+    assert discovery["cardIds"] == ["card-1"]

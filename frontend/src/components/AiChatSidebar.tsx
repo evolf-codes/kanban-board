@@ -45,12 +45,12 @@ export const AiChatSidebar = ({
     setPending(true);
 
     const history = messages;
+    setMessages((current) => [...current, { role: "user", content: text }]);
 
     try {
       const response = await sendChat(text, history);
       setMessages((current) => [
         ...current,
-        { role: "user", content: text },
         { role: "assistant", content: response.message },
       ]);
 

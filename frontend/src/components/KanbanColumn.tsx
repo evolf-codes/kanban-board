@@ -1,3 +1,4 @@
+"use client";
 import clsx from "clsx";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -40,7 +41,7 @@ export const KanbanColumn = ({
             </span>
           </div>
           <input
-            key={column.title}
+            key={column.id}
             defaultValue={column.title}
             onBlur={(event) => {
               const value = event.target.value;

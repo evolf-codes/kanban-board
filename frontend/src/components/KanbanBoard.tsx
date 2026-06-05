@@ -89,7 +89,11 @@ export const KanbanBoard = ({ username, onLogout }: KanbanBoardProps) => {
             ? mutationError.message
             : "Unable to save changes."
         );
-        await loadBoard();
+        try {
+          await loadBoard();
+        } catch {
+          // board reload failed; error state already set above
+        }
       } finally {
         setSaving(false);
       }

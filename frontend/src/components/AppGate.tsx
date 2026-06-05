@@ -66,7 +66,7 @@ export const AppGate = () => {
             </p>
           </main>
         ) : null}
-        <LoginForm onSuccess={setUsername} />
+        <LoginForm onSuccess={setUsername} onAttempt={() => setError(null)} />
       </>
     );
   }

@@ -93,20 +93,20 @@ def rename_column(
         raise ColumnNotFoundError(column_id)
 
 
-def _renumber_column(connection: sqlite3.Connection, column_id: str) -> None:
+def _renumber_column(connection: sqlite3.Connection, column_id: str, board_id: str) -> None:
     rows = connection.execute(
         """
         SELECT id
         FROM cards
-        WHERE column_id = ?
+        WHERE column_id = ? AND board_id = ?
         ORDER BY position ASC, id ASC
         """,
-        (column_id,),
+        (column_id, board_id),
     ).fetchall()
     for index, row in enumerate(rows):
         connection.execute(
-            "UPDATE cards SET position = ? WHERE id = ?",
-            (index, row["id"]),
+            "UPDATE cards SET position = ? WHERE id = ? AND board_id = ?",
+            (index, row["id"], board_id),
         )
 
 
@@ -135,7 +135,7 @@ def create_card(
         INSERT INTO cards (id, board_id, column_id, title, details, position)
         VALUES (?, ?, ?, ?, ?, ?)
         """,
-        (card_id, board_id, column_id, title, details or "No details yet.", next_position),
+        (card_id, board_id, column_id, title, details, next_position),
     )
     return card_id
 
@@ -168,7 +168,7 @@ def delete_card(connection: sqlite3.Connection, board_id: str, card_id: str) -> 
         raise CardNotFoundError(card_id)
 
     connection.execute("DELETE FROM cards WHERE id = ?", (card_id,))
-    _renumber_column(connection, row["column_id"])
+    _renumber_column(connection, row["column_id"], board_id)
 
 
 def _ordered_card_ids(

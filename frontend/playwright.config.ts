@@ -15,7 +15,7 @@ export default defineConfig({
   webServer: [
     {
       command:
-        'sh -c "rm -f /tmp/pm-playwright.db && cd ../backend && python3 -m pip install -q fastapi uvicorn httpx itsdangerous 2>/dev/null; DATABASE_PATH=/tmp/pm-playwright.db PYTHONPATH=. python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8001"',
+        'sh -c "rm -f /tmp/pm-playwright.db && cd ../backend && python3 -m uv sync --no-dev 2>/dev/null; DATABASE_PATH=/tmp/pm-playwright.db PYTHONPATH=. python3 -m uv run --no-dev uvicorn app.main:app --host 127.0.0.1 --port 8001"',
       url: "http://127.0.0.1:8001/api/health",
       reuseExistingServer: false,
       timeout: 120_000,

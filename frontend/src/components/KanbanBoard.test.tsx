@@ -103,7 +103,7 @@ describe("KanbanBoard", () => {
     expect(await within(column).findByText("New card")).toBeInTheDocument();
 
     await userEvent.click(
-      within(column).getByRole("button", { name: /delete new card/i })
+      within(column).getByRole("button", { name: "Delete New card" })
     );
 
     expect(boardApi.deleteCard).toHaveBeenCalledWith("card-new");

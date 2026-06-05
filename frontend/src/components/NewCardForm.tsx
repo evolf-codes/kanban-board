@@ -1,3 +1,4 @@
+"use client";
 import { useState, type FormEvent } from "react";
 
 const initialFormState = { title: "", details: "" };
