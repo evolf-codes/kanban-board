@@ -7,7 +7,8 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  closestCorners,
+  pointerWithin,
+  closestCenter,
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
@@ -43,6 +44,26 @@ export const KanbanBoard = ({ username, onLogout }: KanbanBoardProps) => {
     useSensor(PointerSensor, {
       activationConstraint: { distance: 6 },
     })
+  );
+
+  const collisionDetection = useCallback(
+    (args: Parameters<typeof pointerWithin>[0]) => {
+      const pointerCollisions = pointerWithin(args);
+      if (pointerCollisions.length > 0) {
+        const ids = new Set(pointerCollisions.map(({ id }) => id));
+        return closestCenter({
+          ...args,
+          droppableRects: new Map(
+            [...args.droppableRects].filter(([id]) => ids.has(id))
+          ),
+          droppableContainers: args.droppableContainers.filter((c) =>
+            ids.has(c.id)
+          ),
+        });
+      }
+      return [];
+    },
+    []
   );
 
   const loadBoard = useCallback(async () => {
@@ -248,7 +269,7 @@ export const KanbanBoard = ({ username, onLogout }: KanbanBoardProps) => {
 
         <DndContext
           sensors={sensors}
-          collisionDetection={closestCorners}
+          collisionDetection={collisionDetection}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >

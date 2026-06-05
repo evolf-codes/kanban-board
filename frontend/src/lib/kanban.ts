@@ -107,7 +107,7 @@ export const moveCard = (
       const nextCardIds = activeColumn.cardIds.filter(
         (cardId) => cardId !== activeId
       );
-      nextCardIds.push(activeId);
+      nextCardIds.unshift(activeId);
       return columns.map((column) =>
         column.id === activeColumnId
           ? { ...column, cardIds: nextCardIds }
@@ -143,7 +143,7 @@ export const moveCard = (
 
   const nextOverCardIds = [...overColumn.cardIds];
   if (isOverColumn) {
-    nextOverCardIds.push(activeId);
+    nextOverCardIds.unshift(activeId);
   } else {
     const overIndex = overColumn.cardIds.indexOf(overId);
     const insertIndex = overIndex === -1 ? nextOverCardIds.length : overIndex;
